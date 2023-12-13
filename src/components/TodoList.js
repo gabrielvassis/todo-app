@@ -1,54 +1,102 @@
 import axios from "axios";
 import { url } from "../config.js";
-import { Card, List, Button, Space, Modal, Form, Input } from "antd";
-import { DeleteFilled, EditFilled } from "@ant-design/icons";
+import { Card, List, Button, Space, Modal, Form, Input, Select } from "antd";
+import { DeleteFilled, EditFilled, CheckCircleFilled } from "@ant-design/icons";
 import { useState } from "react";
 
 const TodoList = (props) => {
   const [form] = Form.useForm();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const showModal = (todo) => {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState([]);
+
+  const showEditModal = (todo) => {
     form.setFieldValue("id", todo.id);
     form.setFieldValue("title", todo.title);
     form.setFieldValue("description", todo.description);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
+  };
+
+  const showDeleteModal = (id) => {
+    setIdToDelete(id);
+    setIsDeleteModalOpen(true);
   };
 
   const onFinish = async (todo) => {
     const response = await axios.put(url + "/todo", todo);
     const newTodo = response.data;
+    setIsEditModalOpen(false);
     props.setTodos((todos) => {
-      const foundIndex = todos.findIndex((todo) => todo.id == newTodo.id);
+      const foundIndex = todos.findIndex((todo) => todo.id === newTodo.id);
+      console.log(newTodo);
       todos[foundIndex] = newTodo;
-      return todos;
+      console.log(todos);
+      return [...todos];
     });
-    setIsModalOpen(false);
-  };
-  const handleCancel = () => {
-    setIsModalOpen(false);
   };
 
-  const onClickDeleteHandler = async (id) => {
-    await axios.delete(url + "/todo/" + id);
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleOkDeleteModal = async () => {
+    await axios.delete(url + "/todo/" + idToDelete);
     props.setTodos((todos) => {
-      return todos.filter((todo) => todo.id !== id);
+      return todos.filter((todo) => todo.id !== idToDelete);
     });
+    setIsDeleteModalOpen(false);
+  };
+
+  const onClickDoneHandler = async (todo) => {
+    todo.done = !todo.done;
+    await axios.patch(url + "/todo", todo);
+    props.setTodos((todos) => [...todos]);
+  };
+
+  const handleChange = (value) => {
+    props.onChangeFilter(value);
   };
 
   return (
     <div>
+      <Select
+        defaultValue="Não concluídas"
+        onChange={handleChange}
+        options={[
+          {
+            value: "false",
+            label: "Não concluídas",
+          },
+          {
+            value: "true",
+            label: "Concluídas",
+          },
+        ]}
+      />
       <List>
         {props.todos.map((todo) => {
           return (
-            <Card key={todo.id} title={todo.title}>
+            <Card key={todo.id} title={todo.title} done={todo.done.toString()}>
               {todo.description}
               <Button.Group style={{ float: "right" }}>
                 <Space>
                   <Button
                     type="primary"
+                    icon={<CheckCircleFilled />}
+                    onClick={() => {
+                      onClickDoneHandler(todo);
+                    }}
+                    style={{ background: "green" }}
+                  ></Button>
+                  <Button
+                    type="primary"
                     icon={<EditFilled />}
                     onClick={() => {
-                      showModal(todo);
+                      showEditModal(todo);
                     }}
                   ></Button>
                   <Button
@@ -56,7 +104,7 @@ const TodoList = (props) => {
                     danger
                     icon={<DeleteFilled />}
                     onClick={() => {
-                      onClickDeleteHandler(todo.id);
+                      showDeleteModal(todo.id);
                     }}
                   ></Button>
                 </Space>
@@ -67,9 +115,9 @@ const TodoList = (props) => {
       </List>
       <Modal
         title="Editar"
-        open={isModalOpen}
+        open={isEditModalOpen}
         onOk={form.submit}
-        onCancel={handleCancel}
+        onCancel={handleEditCancel}
       >
         <Form form={form} name="editTodo" onFinish={onFinish}>
           <Form.Item name="id" hidden></Form.Item>
@@ -91,6 +139,12 @@ const TodoList = (props) => {
           </Form.Item>
         </Form>
       </Modal>
+      <Modal
+        title="Deseja excluir a tarefa?"
+        open={isDeleteModalOpen}
+        onOk={handleOkDeleteModal}
+        onCancel={handleDeleteCancel}
+      ></Modal>
     </div>
   );
 };

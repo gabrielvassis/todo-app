@@ -7,19 +7,38 @@ import { useState, useEffect } from "react";
 
 function App() {
   const [todos, setTodos] = useState([]);
+  const [filteredStatus, setFilteredStatus] = useState(false);
+  const [shownTodos, setShownTodos] = useState([]);
+
   const fetchInfo = async () => {
     const response = await axios.get(url + "/todo");
     setTodos(response.data);
+  };
+
+  const filterChangeHandler = (selectedStatus) => {
+    setFilteredStatus(selectedStatus);
   };
 
   useEffect(() => {
     fetchInfo();
   }, []);
 
+  useEffect(() => {
+    setShownTodos(
+      todos.filter((todo) => {
+        return todo.done.toString() === filteredStatus.toString();
+      })
+    );
+  }, [filteredStatus, todos]);
+
   return (
     <div>
       <NewTodo setTodos={setTodos}></NewTodo>
-      <TodoList todos={todos} setTodos={setTodos}></TodoList>
+      <TodoList
+        todos={shownTodos}
+        setTodos={setTodos}
+        onChangeFilter={filterChangeHandler}
+      ></TodoList>
     </div>
   );
 }
