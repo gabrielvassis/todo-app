@@ -33,6 +33,9 @@ function App() {
 
   return (
     <div>
+      <header className="header">
+        <h1>Lista de Tarefas</h1>
+      </header>
       <NewTodo setTodos={setTodos}></NewTodo>
       <TodoList
         todos={shownTodos}

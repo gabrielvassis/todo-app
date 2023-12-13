@@ -1,0 +1,17 @@
+body {
+  margin: 0;
+  font-family: "Quicksand", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: lightblue;
+  color: black;
+}
+
+.header {
+  text-align: center;
+  margin: 3rem auto;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+}

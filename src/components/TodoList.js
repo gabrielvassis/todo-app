@@ -8,7 +8,9 @@ const TodoList = (props) => {
   const [form] = Form.useForm();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState([]);
+  const [todoToChangeStatus, setTodoToChangeStatus] = useState([]);
 
   const showEditModal = (todo) => {
     form.setFieldValue("id", todo.id);
@@ -20,6 +22,11 @@ const TodoList = (props) => {
   const showDeleteModal = (id) => {
     setIdToDelete(id);
     setIsDeleteModalOpen(true);
+  };
+
+  const showStatusModal = (todo) => {
+    setTodoToChangeStatus(todo);
+    setIsStatusModalOpen(true);
   };
 
   const onFinish = async (todo) => {
@@ -43,6 +50,10 @@ const TodoList = (props) => {
     setIsDeleteModalOpen(false);
   };
 
+  const handleStatusCancel = () => {
+    setIsStatusModalOpen(false);
+  };
+
   const handleOkDeleteModal = async () => {
     await axios.delete(url + "/todo/" + idToDelete);
     props.setTodos((todos) => {
@@ -51,10 +62,11 @@ const TodoList = (props) => {
     setIsDeleteModalOpen(false);
   };
 
-  const onClickDoneHandler = async (todo) => {
-    todo.done = !todo.done;
-    await axios.patch(url + "/todo", todo);
+  const handleOkStatusModal = async () => {
+    todoToChangeStatus.done = !todoToChangeStatus.done;
+    await axios.patch(url + "/todo", todoToChangeStatus);
     props.setTodos((todos) => [...todos]);
+    setIsStatusModalOpen(false);
   };
 
   const handleChange = (value) => {
@@ -63,56 +75,64 @@ const TodoList = (props) => {
 
   return (
     <div>
-      <Select
-        defaultValue="Não concluídas"
-        onChange={handleChange}
-        options={[
-          {
-            value: "false",
-            label: "Não concluídas",
-          },
-          {
-            value: "true",
-            label: "Concluídas",
-          },
-        ]}
-      />
-      <List>
-        {props.todos.map((todo) => {
-          return (
-            <Card key={todo.id} title={todo.title} done={todo.done.toString()}>
-              {todo.description}
-              <Button.Group style={{ float: "right" }}>
-                <Space>
-                  <Button
-                    type="primary"
-                    icon={<CheckCircleFilled />}
-                    onClick={() => {
-                      onClickDoneHandler(todo);
-                    }}
-                    style={{ background: "green" }}
-                  ></Button>
-                  <Button
-                    type="primary"
-                    icon={<EditFilled />}
-                    onClick={() => {
-                      showEditModal(todo);
-                    }}
-                  ></Button>
-                  <Button
-                    type="primary"
-                    danger
-                    icon={<DeleteFilled />}
-                    onClick={() => {
-                      showDeleteModal(todo.id);
-                    }}
-                  ></Button>
-                </Space>
-              </Button.Group>
-            </Card>
-          );
-        })}
-      </List>
+      <Card style={{ backgroundColor: "#2d73bd" }}>
+        <Select
+          defaultValue="Não concluídas"
+          onChange={handleChange}
+          options={[
+            {
+              value: "false",
+              label: "Não concluídas",
+            },
+            {
+              value: "true",
+              label: "Concluídas",
+            },
+          ]}
+          style={{ marginBottom: "0.5%" }}
+        />
+        <List>
+          {props.todos.map((todo) => {
+            return (
+              <Card
+                key={todo.id}
+                title={todo.title}
+                done={todo.done.toString()}
+                style={{ marginBottom: "1%" }}
+              >
+                {todo.description}
+                <Button.Group style={{ float: "right" }}>
+                  <Space>
+                    <Button
+                      type="primary"
+                      icon={<CheckCircleFilled />}
+                      onClick={() => {
+                        showStatusModal(todo);
+                      }}
+                      style={{ background: "green" }}
+                    ></Button>
+                    <Button
+                      type="primary"
+                      icon={<EditFilled />}
+                      onClick={() => {
+                        showEditModal(todo);
+                      }}
+                    ></Button>
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<DeleteFilled />}
+                      onClick={() => {
+                        showDeleteModal(todo.id);
+                      }}
+                    ></Button>
+                  </Space>
+                </Button.Group>
+              </Card>
+            );
+          })}
+        </List>
+      </Card>
       <Modal
         title="Editar"
         open={isEditModalOpen}
@@ -144,6 +164,12 @@ const TodoList = (props) => {
         open={isDeleteModalOpen}
         onOk={handleOkDeleteModal}
         onCancel={handleDeleteCancel}
+      ></Modal>
+      <Modal
+        title="Deseja alterar o status da tarefa?"
+        open={isStatusModalOpen}
+        onOk={handleOkStatusModal}
+        onCancel={handleStatusCancel}
       ></Modal>
     </div>
   );

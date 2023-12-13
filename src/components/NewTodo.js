@@ -34,7 +34,7 @@ const NewTodo = (props) => {
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Submit
+              Adicionar
             </Button>
           </Form.Item>
         </Form>
