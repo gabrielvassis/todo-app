@@ -22,6 +22,7 @@ const NewTodo = (props) => {
     try {
       props.setIsLoadingModalOpen(true);
       props.setHidden(true);
+      todo.title = todo.title.trim();
       await axios.post(url + "/todo", todo);
       props.fetchInfo();
       form.resetFields();
