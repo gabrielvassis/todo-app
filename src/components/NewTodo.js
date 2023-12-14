@@ -1,19 +1,41 @@
 import axios from "axios";
 import { url } from "../config.js";
-import { Card, Button, Form, Input } from "antd";
+import { Card, Button, Form, Input, message } from "antd";
 
 const NewTodo = (props) => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
-  const onFinish = async (todo) => {
-    const response = await axios.post(url + "/todo", todo);
-    const newTodo = response.data;
-    props.setTodos((todos) => {
-      return [...todos, newTodo];
+  const success = () => {
+    messageApi.open({
+      type: "success",
+      content: "Adicionado com sucesso!",
     });
-    form.resetFields();
+  };
+  const error = () => {
+    messageApi.open({
+      type: "error",
+      content: "Erro ao adicionar.",
+    });
+  };
+
+  const onFinish = async (todo) => {
+    try {
+      props.setIsLoadingModalOpen(true);
+      props.setHidden(true);
+      await axios.post(url + "/todo", todo);
+      props.fetchInfo();
+      form.resetFields();
+      success();
+    } catch (err) {
+      error();
+    } finally {
+      props.setIsLoadingModalOpen(false);
+      props.setHidden(false);
+    }
   };
   return (
     <div>
+      {contextHolder}
       <Card>
         <Form form={form} name="newTodo" onFinish={onFinish}>
           <Form.Item

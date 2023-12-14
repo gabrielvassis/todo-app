@@ -1,16 +1,30 @@
 import axios from "axios";
 import { url } from "../config.js";
-import { Card, List, Button, Space, Modal, Form, Input, Select } from "antd";
-import { DeleteFilled, EditFilled, CheckCircleFilled } from "@ant-design/icons";
+import { Card, List, Modal, Form, Input, Select, message } from "antd";
 import { useState } from "react";
+import TodoCard from "./TodoCard.js";
 
 const TodoList = (props) => {
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState([]);
   const [todoToChangeStatus, setTodoToChangeStatus] = useState([]);
+
+  const success = (message) => {
+    messageApi.open({
+      type: "success",
+      content: message,
+    });
+  };
+  const error = (message) => {
+    messageApi.open({
+      type: "error",
+      content: message,
+    });
+  };
 
   const showEditModal = (todo) => {
     form.setFieldValue("id", todo.id);
@@ -30,16 +44,19 @@ const TodoList = (props) => {
   };
 
   const onFinish = async (todo) => {
-    const response = await axios.put(url + "/todo", todo);
-    const newTodo = response.data;
-    setIsEditModalOpen(false);
-    props.setTodos((todos) => {
-      const foundIndex = todos.findIndex((todo) => todo.id === newTodo.id);
-      console.log(newTodo);
-      todos[foundIndex] = newTodo;
-      console.log(todos);
-      return [...todos];
-    });
+    try {
+      setIsEditModalOpen(false);
+      props.setIsLoadingModalOpen(true);
+      props.setHidden(true);
+      await axios.put(url + "/todo", todo);
+      props.fetchInfo();
+      success("Editado com sucesso!");
+    } catch (err) {
+      error("Falha ao editar.");
+    } finally {
+      props.setIsLoadingModalOpen(false);
+      props.setHidden(false);
+    }
   };
 
   const handleEditCancel = () => {
@@ -55,18 +72,36 @@ const TodoList = (props) => {
   };
 
   const handleOkDeleteModal = async () => {
-    await axios.delete(url + "/todo/" + idToDelete);
-    props.setTodos((todos) => {
-      return todos.filter((todo) => todo.id !== idToDelete);
-    });
-    setIsDeleteModalOpen(false);
+    try {
+      setIsDeleteModalOpen(false);
+      props.setIsLoadingModalOpen(true);
+      props.setHidden(true);
+      await axios.delete(url + "/todo/" + idToDelete);
+      props.fetchInfo();
+      success("Excluído com sucesso!");
+    } catch (err) {
+      error("Falha ao excluir.");
+    } finally {
+      props.setIsLoadingModalOpen(false);
+      props.setHidden(false);
+    }
   };
 
   const handleOkStatusModal = async () => {
-    todoToChangeStatus.done = !todoToChangeStatus.done;
-    await axios.patch(url + "/todo", todoToChangeStatus);
-    props.setTodos((todos) => [...todos]);
-    setIsStatusModalOpen(false);
+    try {
+      setIsStatusModalOpen(false);
+      props.setIsLoadingModalOpen(true);
+      props.setHidden(true);
+      todoToChangeStatus.done = !todoToChangeStatus.done;
+      await axios.patch(url + "/todo", todoToChangeStatus);
+      props.fetchInfo();
+      success("Status alterado com sucesso!");
+    } catch (err) {
+      error("Falha ao alterar status.");
+    } finally {
+      props.setIsLoadingModalOpen(false);
+      props.setHidden(false);
+    }
   };
 
   const handleChange = (value) => {
@@ -75,6 +110,7 @@ const TodoList = (props) => {
 
   return (
     <div>
+      {contextHolder}
       <Card style={{ backgroundColor: "#2d73bd" }}>
         <Select
           defaultValue="Não concluídas"
@@ -94,41 +130,13 @@ const TodoList = (props) => {
         <List>
           {props.todos.map((todo) => {
             return (
-              <Card
+              <TodoCard
                 key={todo.id}
-                title={todo.title}
-                done={todo.done.toString()}
-                style={{ marginBottom: "1%" }}
-              >
-                {todo.description}
-                <Button.Group style={{ float: "right" }}>
-                  <Space>
-                    <Button
-                      type="primary"
-                      icon={<CheckCircleFilled />}
-                      onClick={() => {
-                        showStatusModal(todo);
-                      }}
-                      style={{ background: "green" }}
-                    ></Button>
-                    <Button
-                      type="primary"
-                      icon={<EditFilled />}
-                      onClick={() => {
-                        showEditModal(todo);
-                      }}
-                    ></Button>
-                    <Button
-                      type="primary"
-                      danger
-                      icon={<DeleteFilled />}
-                      onClick={() => {
-                        showDeleteModal(todo.id);
-                      }}
-                    ></Button>
-                  </Space>
-                </Button.Group>
-              </Card>
+                todo={todo}
+                showStatusModal={(todo) => showStatusModal(todo)}
+                showEditModal={(todo) => showEditModal(todo)}
+                showDeleteModal={(todo) => showDeleteModal(todo)}
+              />
             );
           })}
         </List>

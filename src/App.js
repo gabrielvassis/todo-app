@@ -1,13 +1,15 @@
-import "./App.css";
 import { url } from "./config.js";
 import axios from "axios";
 import TodoList from "./components/TodoList.js";
 import NewTodo from "./components/NewTodo.js";
 import { useState, useEffect } from "react";
+import { Modal, Spin } from "antd";
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [filteredStatus, setFilteredStatus] = useState(false);
+  const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [shownTodos, setShownTodos] = useState([]);
 
   const fetchInfo = async () => {
@@ -33,15 +35,33 @@ function App() {
 
   return (
     <div>
-      <header className="header">
-        <h1>Lista de Tarefas</h1>
-      </header>
-      <NewTodo setTodos={setTodos}></NewTodo>
-      <TodoList
-        todos={shownTodos}
-        setTodos={setTodos}
-        onChangeFilter={filterChangeHandler}
-      ></TodoList>
+      <div hidden={hidden}>
+        <header className="header">
+          <h1>Lista de Tarefas</h1>
+        </header>
+        <NewTodo
+          setTodos={setTodos}
+          setIsLoadingModalOpen={setIsLoadingModalOpen}
+          setHidden={setHidden}
+          fetchInfo={fetchInfo}
+        ></NewTodo>
+        <TodoList
+          todos={shownTodos}
+          setTodos={setTodos}
+          onChangeFilter={filterChangeHandler}
+          setIsLoadingModalOpen={setIsLoadingModalOpen}
+          setHidden={setHidden}
+          fetchInfo={fetchInfo}
+        ></TodoList>
+      </div>
+      <Modal
+        open={isLoadingModalOpen}
+        footer={null}
+        closable={false}
+        width={"100"}
+      >
+        <Spin />
+      </Modal>
     </div>
   );
 }
