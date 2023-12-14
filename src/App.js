@@ -7,7 +7,7 @@ import { Modal, Spin } from "antd";
 
 function App() {
   const [todos, setTodos] = useState([]);
-  const [filteredStatus, setFilteredStatus] = useState(false);
+  const [filteredStatus, setFilteredStatus] = useState("todos");
   const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [shownTodos, setShownTodos] = useState([]);
