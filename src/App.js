@@ -26,11 +26,13 @@ function App() {
   }, []);
 
   useEffect(() => {
-    setShownTodos(
-      todos.filter((todo) => {
+    let shownTodos = todos;
+    if (filteredStatus !== "todos") {
+      shownTodos = todos.filter((todo) => {
         return todo.done.toString() === filteredStatus.toString();
-      })
-    );
+      });
+    }
+    setShownTodos(shownTodos);
   }, [filteredStatus, todos]);
 
   return (
@@ -54,12 +56,7 @@ function App() {
           fetchInfo={fetchInfo}
         ></TodoList>
       </div>
-      <Modal
-        open={isLoadingModalOpen}
-        footer={null}
-        closable={false}
-        width={"100"}
-      >
+      <Modal open={isLoadingModalOpen} footer={null} closable={false}>
         <Spin />
       </Modal>
     </div>

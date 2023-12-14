@@ -8,7 +8,10 @@ const TodoCard = (props) => {
       key={todo.id}
       title={todo.title}
       done={todo.done.toString()}
-      style={{ marginBottom: "1%" }}
+      style={{
+        marginBottom: "1%",
+        textDecoration: todo.done ? "line-through" : "none",
+      }}
     >
       {todo.description}
       <Button.Group style={{ float: "right" }}>

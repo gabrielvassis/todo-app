@@ -36,7 +36,7 @@ const NewTodo = (props) => {
   return (
     <div>
       {contextHolder}
-      <Card>
+      <Card style={{ margin: "5px" }}>
         <Form form={form} name="newTodo" onFinish={onFinish}>
           <Form.Item
             label="Título"

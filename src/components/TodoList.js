@@ -111,11 +111,15 @@ const TodoList = (props) => {
   return (
     <div>
       {contextHolder}
-      <Card style={{ backgroundColor: "#2d73bd" }}>
+      <Card style={{ backgroundColor: "#2d73bd", margin: "5px" }}>
         <Select
-          defaultValue="Não concluídas"
+          defaultValue="Todos"
           onChange={handleChange}
           options={[
+            {
+              value: "todos",
+              label: "Todos",
+            },
             {
               value: "false",
               label: "Não concluídas",
@@ -146,6 +150,7 @@ const TodoList = (props) => {
         open={isEditModalOpen}
         onOk={form.submit}
         onCancel={handleEditCancel}
+        cancelText={"Cancelar"}
       >
         <Form form={form} name="editTodo" onFinish={onFinish}>
           <Form.Item name="id" hidden></Form.Item>
@@ -172,12 +177,14 @@ const TodoList = (props) => {
         open={isDeleteModalOpen}
         onOk={handleOkDeleteModal}
         onCancel={handleDeleteCancel}
+        cancelText={"Cancelar"}
       ></Modal>
       <Modal
         title="Deseja alterar o status da tarefa?"
         open={isStatusModalOpen}
         onOk={handleOkStatusModal}
         onCancel={handleStatusCancel}
+        cancelText={"Cancelar"}
       ></Modal>
     </div>
   );
